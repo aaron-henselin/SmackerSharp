@@ -6,7 +6,17 @@
     <LangVersion>latest</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <PackageId>SmackerSharp</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Greg Kennedy, Aaron Henselin</Authors>
+    <Description>A fully managed .NET/C# port of libsmacker for decoding RAD Smacker video (.smk) files.</Description>
+    <PackageLicenseExpression>LGPL-2.1-only</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/aaron-henselin/SmackerSharp</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>SmackerSharp.Tests</_Parameter1>
