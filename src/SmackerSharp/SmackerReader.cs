@@ -4,6 +4,9 @@ using SmackerSharp.Internal;
 
 namespace SmackerSharp;
 
+/// <summary>
+/// Provides a fully managed reader and decoder for RAD Smacker (.smk) video files.
+/// </summary>
 public sealed class SmackerReader : IDisposable
 {
     private readonly IMemoryOwner<byte>? _ownedData;
@@ -35,6 +38,9 @@ public sealed class SmackerReader : IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets the current state and timing info of the Smacker file.
+    /// </summary>
     public SmackerInfo Info
     {
         get
@@ -44,16 +50,31 @@ public sealed class SmackerReader : IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets the video dimension and layout properties.
+    /// </summary>
     public SmackerVideoInfo VideoInfo { get; }
 
+    /// <summary>
+    /// Gets the list of audio track headers present in the Smacker file.
+    /// </summary>
     public IReadOnlyList<SmackerAudioTrackInfo> AudioTracks { get; }
 
     internal SmackerContainer Container => _container;
 
+    /// <summary>
+    /// Gets the Smacker file format version identifier.
+    /// </summary>
     public char Version => (char)_container.Version;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether video frame decoding is enabled.
+    /// </summary>
     public bool VideoEnabled { get; set; }
 
+    /// <summary>
+    /// Gets the mask representing all available audio tracks in the file.
+    /// </summary>
     public SmackerTrackMask AudioTrackMask
     {
         get
@@ -71,6 +92,9 @@ public sealed class SmackerReader : IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets the current frame's palette as 256 RGB byte triples (768 bytes total).
+    /// </summary>
     public ReadOnlySpan<byte> PaletteRgb
     {
         get
@@ -80,6 +104,9 @@ public sealed class SmackerReader : IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets the current frame's decoded 8-bit palettized video pixel buffer.
+    /// </summary>
     public ReadOnlySpan<byte> VideoFrame8
     {
         get
@@ -89,6 +116,12 @@ public sealed class SmackerReader : IDisposable
         }
     }
 
+    /// <summary>
+    /// Opens a Smacker file from the specified file path.
+    /// </summary>
+    /// <param name="path">The path to the Smacker file.</param>
+    /// <param name="mode">The streaming mode (Memory or Disk).</param>
+    /// <returns>A new <see cref="SmackerReader"/> instance.</returns>
     public static SmackerReader Open(string path, SmackerOpenMode mode = SmackerOpenMode.Memory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
@@ -103,6 +136,12 @@ public sealed class SmackerReader : IDisposable
         return Open(data);
     }
 
+    /// <summary>
+    /// Opens a Smacker file from the specified stream.
+    /// </summary>
+    /// <param name="stream">The source stream.</param>
+    /// <param name="mode">The streaming mode (Memory or Disk).</param>
+    /// <returns>A new <see cref="SmackerReader"/> instance.</returns>
     public static SmackerReader Open(Stream stream, SmackerOpenMode mode = SmackerOpenMode.Memory)
     {
         ArgumentNullException.ThrowIfNull(stream);
@@ -118,12 +157,22 @@ public sealed class SmackerReader : IDisposable
         return Open(data);
     }
 
+    /// <summary>
+    /// Opens a Smacker file from a read-only memory buffer.
+    /// </summary>
+    /// <param name="data">The buffer containing the entire Smacker file.</param>
+    /// <returns>A new <see cref="SmackerReader"/> instance.</returns>
     public static SmackerReader Open(ReadOnlyMemory<byte> data)
     {
         SmackerContainer container = SmackerParser.Parse(data);
         return new SmackerReader(null, container);
     }
 
+    /// <summary>
+    /// Enables or disables decoding of a specific audio track.
+    /// </summary>
+    /// <param name="track">The audio track index (0 to 6).</param>
+    /// <param name="enabled">True to enable decoding; false to disable.</param>
     public void SetAudioEnabled(int track, bool enabled)
     {
         ThrowIfDisposed();
@@ -136,6 +185,11 @@ public sealed class SmackerReader : IDisposable
         _audioEnabled[track] = enabled;
     }
 
+    /// <summary>
+    /// Checks whether decoding is enabled for a specific audio track.
+    /// </summary>
+    /// <param name="track">The audio track index (0 to 6).</param>
+    /// <returns>True if decoding is enabled; otherwise, false.</returns>
     public bool IsAudioEnabled(int track)
     {
         ThrowIfDisposed();
@@ -148,6 +202,10 @@ public sealed class SmackerReader : IDisposable
         return _audioEnabled[track];
     }
 
+    /// <summary>
+    /// Enables or disables multiple tracks (video and audio) at once using a mask.
+    /// </summary>
+    /// <param name="mask">The track mask combination to enable.</param>
     public void SetEnabled(SmackerTrackMask mask)
     {
         ThrowIfDisposed();
@@ -159,6 +217,11 @@ public sealed class SmackerReader : IDisposable
         }
     }
 
+    /// <summary>
+    /// Retrieves the decoded audio sample bytes for the current frame on a specific track.
+    /// </summary>
+    /// <param name="track">The audio track index (0 to 6).</param>
+    /// <returns>A span containing the decoded PCM audio bytes.</returns>
     public ReadOnlySpan<byte> GetAudio(int track)
     {
         ThrowIfDisposed();
@@ -171,6 +234,10 @@ public sealed class SmackerReader : IDisposable
         return _audioBuffers[track].AsSpan(0, checked((int)_audioBufferSizes[track]));
     }
 
+    /// <summary>
+    /// Rewinds the reader to the first frame and decodes it.
+    /// </summary>
+    /// <returns>A value indicating whether more frames remain in the stream.</returns>
     public SmackerFrameResult First()
     {
         ThrowIfDisposed();
@@ -179,6 +246,10 @@ public sealed class SmackerReader : IDisposable
         return Info.FrameCount <= 1 ? SmackerFrameResult.Last : SmackerFrameResult.More;
     }
 
+    /// <summary>
+    /// Advances the reader to the next frame and decodes it.
+    /// </summary>
+    /// <returns>The result of the advance operation (Done, More, or Last).</returns>
     public SmackerFrameResult Next()
     {
         ThrowIfDisposed();
@@ -201,6 +272,10 @@ public sealed class SmackerReader : IDisposable
         return SmackerFrameResult.Done;
     }
 
+    /// <summary>
+    /// Seeks to the nearest keyframe before or at the specified frame index, and decodes it.
+    /// </summary>
+    /// <param name="frame">The target 0-based frame index.</param>
     public void SeekKeyframe(uint frame)
     {
         ThrowIfDisposed();
@@ -219,6 +294,7 @@ public sealed class SmackerReader : IDisposable
         RenderCurrentFrame();
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
         if (_disposed)

@@ -3,6 +3,9 @@ using System.IO;
 
 namespace SmackerSharp;
 
+/// <summary>
+/// Provides a basic writer and encoder for creating RAD Smacker (.smk) video files.
+/// </summary>
 public sealed class SmackerWriter : IDisposable
 {
     private const int AudioTrackCount = 7;
@@ -13,6 +16,11 @@ public sealed class SmackerWriter : IDisposable
     private bool _finished;
     private bool _disposed;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SmackerWriter"/> class.
+    /// </summary>
+    /// <param name="output">The target writable stream where the Smacker file will be written.</param>
+    /// <param name="options">The video properties and encoding options.</param>
     public SmackerWriter(Stream output, SmackerWriterOptions options)
     {
         ArgumentNullException.ThrowIfNull(output);
@@ -47,6 +55,12 @@ public sealed class SmackerWriter : IDisposable
         _options = options;
     }
 
+    /// <summary>
+    /// Adds a new frame to the Smacker video stream.
+    /// </summary>
+    /// <param name="indexedPixels">The 8-bit indexed pixel buffer (length must be Width * Height).</param>
+    /// <param name="paletteRgb">The palette containing exactly 768 RGB bytes.</param>
+    /// <param name="audioChunks">Optional audio tracks' raw data (currently unsupported).</param>
     public void AddFrame(
         ReadOnlySpan<byte> indexedPixels,
         ReadOnlySpan<byte> paletteRgb,
@@ -86,6 +100,9 @@ public sealed class SmackerWriter : IDisposable
         _frames.Add(new PendingFrame(solidColorIndex, paletteRgb.ToArray()));
     }
 
+    /// <summary>
+    /// Finalizes the Smacker file write operation by outputting the file headers, Huffman trees, and frame payloads.
+    /// </summary>
     public void Finish()
     {
         ThrowIfDisposed();
@@ -103,6 +120,7 @@ public sealed class SmackerWriter : IDisposable
         _finished = true;
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
         if (_disposed)

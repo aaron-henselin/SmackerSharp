@@ -5,7 +5,6 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);1591</NoWarn>
     <PackageId>SmackerSharp</PackageId>
     <Version>1.0.0</Version>
     <Authors>Greg Kennedy, Aaron Henselin</Authors>
