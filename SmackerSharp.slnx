@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SmackerSharp/SmackerSharp.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SmackerSharp.Tests/SmackerSharp.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/SmackerSharp.Dump/SmackerSharp.Dump.csproj" />
+    <Project Path="tools/SmackerSharp.RaylibPlayer/SmackerSharp.RaylibPlayer.csproj" />
+  </Folder>
+</Solution>
